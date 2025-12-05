@@ -7,12 +7,14 @@ A professional, user-friendly web application for generating QR codes and barcod
 ## ✨ Features
 
 ### 🔲 QR Code Generation
+
 - Support for various data types (URLs, text, email, phone, WiFi, location)
 - Multiple error correction levels (L, M, Q, H)
 - Custom size and styling options
 - Quick preset templates
 
 ### 🏷️ Barcode Generation
+
 - 9 barcode formats supported:
   - CODE128 (General text/numbers)
   - CODE39 (Industry/inventory)
@@ -25,6 +27,7 @@ A professional, user-friendly web application for generating QR codes and barcod
   - Codabar (Libraries/blood banks)
 
 ### 🎨 Customization Options
+
 - **Background Types:**
   - Solid colors
   - Gradient backgrounds
@@ -36,29 +39,34 @@ A professional, user-friendly web application for generating QR codes and barcod
   - Font size control for barcodes
 
 ### 📥 Export Options
+
 - **PNG Format:** High-quality raster images for print and web
 - **SVG Format:** Scalable vector graphics for design and resizing
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone https://github.com/RizkyYuliAndreanto/Barcode-Qrcode-Generator.git
 cd Barcode-Qrcode-Generator
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start development server:
+
 ```bash
 npm run dev
 ```
@@ -68,11 +76,13 @@ npm run dev
 ## 📦 Build & Deploy
 
 ### Build for Production
+
 ```bash
 npm run build
 ```
 
 ### Deploy to GitHub Pages
+
 ```bash
 npm run deploy
 ```
@@ -89,6 +99,7 @@ npm run deploy
 ## 📱 Responsive Design
 
 The application is fully responsive and works seamlessly on:
+
 - Desktop computers (1920px+)
 - Laptops (1366px+)
 - Tablets (768px+)
@@ -97,6 +108,7 @@ The application is fully responsive and works seamlessly on:
 ## 🎯 Use Cases
 
 ### QR Codes
+
 - Website URLs and social media links
 - Contact information (vCard)
 - WiFi network credentials
@@ -105,6 +117,7 @@ The application is fully responsive and works seamlessly on:
 - SMS messages with pre-filled text
 
 ### Barcodes
+
 - Product inventory and retail items
 - Asset tracking and management
 - Library and document management
@@ -126,6 +139,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 👤 Author
 
 **Rizky Yuli Andreanto**
+
 - GitHub: [@RizkyYuliAndreanto](https://github.com/RizkyYuliAndreanto)
 - LinkedIn: [Rizky Yuli Andreanto](https://linkedin.com/in/rizkyyuliandreanto)
 
