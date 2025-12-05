@@ -115,58 +115,53 @@ const BarcodeGenerator = () => {
     gradientColor2,
   ]);
 
-  // Download sebagai PNG
+  // Download sebagai PNG - Direct canvas method
   const downloadPNG = async () => {
-    if (downloadRef.current) {
+    if (canvasRef.current) {
       try {
-        const canvas = await html2canvas(downloadRef.current, {
-          backgroundColor: backgroundColor,
-          scale: 4, // Tingkatkan resolusi untuk kualitas lebih baik
-          useCORS: true,
-          allowTaint: false,
-          foreignObjectRendering: false,
-          imageTimeout: 0,
-          removeContainer: true,
-          logging: false,
-          width: downloadRef.current.scrollWidth,
-          height: downloadRef.current.scrollHeight,
-          onclone: (clonedDoc) => {
-            // Pastikan warna hitam maksimal pada clone
-            const clonedSvgs = clonedDoc.querySelectorAll('svg');
-            clonedSvgs.forEach(svg => {
-              const paths = svg.querySelectorAll('path, rect');
-              paths.forEach(path => {
-                if (path.getAttribute('fill') && path.getAttribute('fill').includes('#000')) {
-                  path.setAttribute('fill', '#000000');
-                }
-                if (path.style.fill && path.style.fill.includes('#000')) {
-                  path.style.fill = '#000000';
-                }
-              });
-            });
-            
-            // Perbaiki canvas elements juga
-            const canvases = clonedDoc.querySelectorAll('canvas');
-            canvases.forEach(canvas => {
-              const ctx = canvas.getContext('2d');
-              if (ctx) {
-                ctx.imageSmoothingEnabled = false;
-              }
-            });
-          }
-        });
+        // Gunakan canvas asli langsung tanpa html2canvas untuk hasil terbaik
+        const originalCanvas = canvasRef.current;
         
-        // Perbaiki kualitas canvas hasil
-        const ctx = canvas.getContext('2d');
+        // Buat canvas baru dengan background custom jika diperlukan
+        const finalCanvas = document.createElement('canvas');
+        const ctx = finalCanvas.getContext('2d');
+        
+        // Set ukuran canvas sama dengan original
+        finalCanvas.width = originalCanvas.width;
+        finalCanvas.height = originalCanvas.height;
+        
+        // Disable smoothing untuk hasil tajam
         ctx.imageSmoothingEnabled = false;
         
-        canvas.toBlob((blob) => {
+        // Atur background sesuai pengaturan user
+        const bgColor = backgroundType === "solid" ? backgroundColor : "#ffffff";
+        
+        if (backgroundType === "gradient") {
+          // Buat gradient background
+          const gradient = ctx.createLinearGradient(0, 0, finalCanvas.width, finalCanvas.height);
+          gradient.addColorStop(0, gradientColor1);
+          gradient.addColorStop(1, gradientColor2);
+          ctx.fillStyle = gradient;
+        } else {
+          // Background solid
+          ctx.fillStyle = bgColor;
+        }
+        
+        // Fill background
+        ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
+        
+        // Copy canvas asli ke canvas final
+        ctx.drawImage(originalCanvas, 0, 0);
+        
+        // Download
+        finalCanvas.toBlob((blob) => {
           const fileName =
             codeType === "QR"
               ? `qrcode-${text.substring(0, 10)}.png`
               : `barcode-${text}.png`;
           saveAs(blob, fileName);
-        }, 'image/png', 1.0); // Kualitas maksimal
+        }, 'image/png', 1.0);
+        
       } catch (error) {
         console.error("Error downloading PNG:", error);
       }
@@ -176,36 +171,75 @@ const BarcodeGenerator = () => {
   // Download sebagai SVG
   const downloadSVG = async () => {
     try {
+      const bgColor = backgroundType === "solid" ? backgroundColor : "#ffffff";
+      
       if (codeType === "QR") {
-        // Generate QR Code SVG
-        const svgString = await QRCode.toString(text, {
+        // Generate QR Code SVG dengan background yang tepat
+        let svgString = await QRCode.toString(text, {
           type: "svg",
           width: qrSize,
           margin: margin / 10,
           color: {
             dark: lineColor,
-            light: backgroundColor,
+            light: bgColor,
           },
           errorCorrectionLevel: qrErrorLevel,
         });
+        
+        // Jika background gradient, tambahkan gradient definition ke SVG
+        if (backgroundType === "gradient") {
+          const gradientDef = `<defs><linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:${gradientColor1}"/><stop offset="100%" style="stop-color:${gradientColor2}"/></linearGradient></defs>`;
+          svgString = svgString.replace('<svg', `<svg`).replace('><rect', `>${gradientDef}<rect fill="url(#bgGradient)"/><rect`);
+        }
+        
         const blob = new Blob([svgString], { type: "image/svg+xml" });
         saveAs(blob, `qrcode-${text.substring(0, 10)}.svg`);
       } else {
-        // Generate Barcode SVG
-        const svg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg"
-        );
+        // Generate Barcode SVG dengan background yang tepat
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        
         JsBarcode(svg, text, {
           format: format,
           width: width,
           height: height,
           displayValue: displayValue,
           fontSize: fontSize,
-          background: backgroundColor,
+          background: bgColor,
           lineColor: lineColor,
           margin: margin,
         });
+
+        // Jika background gradient, modifikasi SVG untuk menambahkan gradient
+        if (backgroundType === "gradient") {
+          const gradientDef = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+          const linearGradient = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+          linearGradient.setAttribute("id", "bgGradient");
+          linearGradient.setAttribute("x1", "0%");
+          linearGradient.setAttribute("y1", "0%");
+          linearGradient.setAttribute("x2", "100%");
+          linearGradient.setAttribute("y2", "100%");
+          
+          const stop1 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+          stop1.setAttribute("offset", "0%");
+          stop1.setAttribute("style", `stop-color:${gradientColor1}`);
+          
+          const stop2 = document.createElementNS("http://www.w3.org/2000/svg", "stop");
+          stop2.setAttribute("offset", "100%");
+          stop2.setAttribute("style", `stop-color:${gradientColor2}`);
+          
+          linearGradient.appendChild(stop1);
+          linearGradient.appendChild(stop2);
+          gradientDef.appendChild(linearGradient);
+          
+          // Insert gradient at beginning
+          svg.insertBefore(gradientDef, svg.firstChild);
+          
+          // Change background rect fill
+          const bgRect = svg.querySelector('rect');
+          if (bgRect) {
+            bgRect.setAttribute('fill', 'url(#bgGradient)');
+          }
+        }
 
         const svgData = new XMLSerializer().serializeToString(svg);
         const blob = new Blob([svgData], { type: "image/svg+xml" });

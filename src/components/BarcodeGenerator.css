@@ -595,19 +595,10 @@
   border-radius: 8px;
   transition: all 0.3s ease;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  /* Rendering tajam untuk QR code dan barcode */
-  image-rendering: -webkit-optimize-contrast;
+  /* Rendering tajam untuk display saja - tidak mempengaruhi download */
   image-rendering: -webkit-crisp-edges;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-  image-rendering: pixelated;
-  /* Anti-aliasing off untuk pixel perfect */
-  -webkit-font-smoothing: none;
-  -moz-osx-font-smoothing: unset;
-  /* Pastikan canvas tidak blur */
-  -webkit-backface-visibility: hidden;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
 }
 
 .barcode-preview:hover canvas {
