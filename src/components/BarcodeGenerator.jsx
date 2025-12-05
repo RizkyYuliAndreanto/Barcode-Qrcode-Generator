@@ -67,10 +67,13 @@ const BarcodeGenerator = () => {
             width: qrSize,
             margin: margin / 10,
             color: {
-              dark: lineColor,
+              dark: lineColor === "#000000" || lineColor === "#000" ? "#000000" : lineColor,
               light: bgColor,
             },
             errorCorrectionLevel: qrErrorLevel,
+            rendererOpts: {
+              quality: 1.0,
+            }
           });
         } else {
           // Generate Barcode
@@ -118,15 +121,52 @@ const BarcodeGenerator = () => {
       try {
         const canvas = await html2canvas(downloadRef.current, {
           backgroundColor: backgroundColor,
-          scale: 2,
+          scale: 4, // Tingkatkan resolusi untuk kualitas lebih baik
+          useCORS: true,
+          allowTaint: false,
+          foreignObjectRendering: false,
+          imageTimeout: 0,
+          removeContainer: true,
+          logging: false,
+          width: downloadRef.current.scrollWidth,
+          height: downloadRef.current.scrollHeight,
+          onclone: (clonedDoc) => {
+            // Pastikan warna hitam maksimal pada clone
+            const clonedSvgs = clonedDoc.querySelectorAll('svg');
+            clonedSvgs.forEach(svg => {
+              const paths = svg.querySelectorAll('path, rect');
+              paths.forEach(path => {
+                if (path.getAttribute('fill') && path.getAttribute('fill').includes('#000')) {
+                  path.setAttribute('fill', '#000000');
+                }
+                if (path.style.fill && path.style.fill.includes('#000')) {
+                  path.style.fill = '#000000';
+                }
+              });
+            });
+            
+            // Perbaiki canvas elements juga
+            const canvases = clonedDoc.querySelectorAll('canvas');
+            canvases.forEach(canvas => {
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.imageSmoothingEnabled = false;
+              }
+            });
+          }
         });
+        
+        // Perbaiki kualitas canvas hasil
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        
         canvas.toBlob((blob) => {
           const fileName =
             codeType === "QR"
               ? `qrcode-${text.substring(0, 10)}.png`
               : `barcode-${text}.png`;
           saveAs(blob, fileName);
-        });
+        }, 'image/png', 1.0); // Kualitas maksimal
       } catch (error) {
         console.error("Error downloading PNG:", error);
       }
